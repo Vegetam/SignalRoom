@@ -1,0 +1,82 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: signalroom
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-signalroom-local-only}
+      POSTGRES_DB: signalroom
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U signalroom -d signalroom"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  sfu:
+    image: livekit/livekit-server:v1.9
+    command: ["--config", "/etc/livekit.yaml", "--node-ip", "127.0.0.1"]
+    volumes:
+      - ./infrastructure/livekit.yaml:/etc/livekit.yaml:ro
+    ports:
+      - "7880:7880/tcp"
+      - "7881:7881/tcp"
+      - "50000-50020:50000-50020/udp"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+  coturn:
+    image: coturn/coturn:4.6
+    command: ["-c", "/etc/coturn/turnserver.conf", "--user=${COTURN_USER:-demo}:${COTURN_PASSWORD:-change-before-public-deploy}"]
+    volumes:
+      - ./infrastructure/turnserver.conf:/etc/coturn/turnserver.conf:ro
+    ports:
+      - "3478:3478/udp"
+      - "3478:3478/tcp"
+      - "49160-49170:49160-49170/udp"
+    restart: unless-stopped
+  api:
+    build: ./backend
+    volumes:
+      - signalroom-data:/data
+    environment:
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-devkey}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-developmentsecretmustbe32characterslong}
+      LIVEKIT_PUBLIC_URL: ${LIVEKIT_PUBLIC_URL:-ws://localhost:7880}
+      ALLOWED_ORIGIN: http://localhost:3000
+      DATABASE_URL: jdbc:postgresql://postgres:5432/signalroom
+      SPRING_DATASOURCE_USERNAME: signalroom
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-signalroom-local-only}
+      SIGNALROOM_FILES: /data/uploads
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      sfu:
+        condition: service_started
+  web:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+        NEXT_PUBLIC_LIVEKIT_URL: ${NEXT_PUBLIC_LIVEKIT_URL:-ws://localhost:7880}
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+      NEXT_PUBLIC_LIVEKIT_URL: ${NEXT_PUBLIC_LIVEKIT_URL:-ws://localhost:7880}
+    ports:
+      - "3000:3000"
+    depends_on: [api, sfu]
+
+volumes:
+  signalroom-data:
+  postgres-data:

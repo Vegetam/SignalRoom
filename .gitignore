@@ -1,0 +1,100 @@
+# SignalRoom — root .gitignore
+# Environment and credentials (keep sanitized templates)
+.env
+.env.*
+!.env.example
+!**/.env.example
+!.env.*.example
+!**/.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.asc
+secrets/
+**/secrets/
+credentials.json
+service-account*.json
+
+# Next.js / Node
+**/node_modules/
+**/.next/
+**/.turbo/
+**/out/
+**/coverage/
+**/.nyc_output/
+**/*.tsbuildinfo
+**/.eslintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Java / Maven / Gradle
+**/target/
+**/build/
+**/.gradle/
+*.class
+*.jar
+*.war
+*.ear
+!**/mvnw.jar
+
+# Runtime persistence (attachments, local databases)
+**/uploads/
+**/attachments/
+**/storage/
+**/data/
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+**/*.h2.db
+**/*.mv.db
+
+# Logs and generated diagnostics
+*.log
+logs/
+**/logs/
+*.pid
+*.pid.lock
+*.heapdump
+*.hprof
+
+# Terraform / infrastructure state and secrets
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+!*.tfvars.json.example
+crash.log
+crash.*.log
+
+# IDE, OS and temporary files
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+*.tmp
+*.bak
+
+# Python tests / helpers
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Keep source-controlled lockfiles and Docker configuration.
+# Do not ignore package-lock.json, pnpm-lock.yaml, yarn.lock or compose files.

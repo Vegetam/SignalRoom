@@ -1,0 +1,25 @@
+server:
+  port: ${PORT:8080}
+spring:
+  application:
+    name: webrtc-meet-api
+  datasource:
+    url: ${DATABASE_URL:jdbc:h2:file:/data/signalroom;AUTO_SERVER=TRUE}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${DATABASE_PASSWORD:}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+meet:
+  api-key: ${LIVEKIT_API_KEY:devkey}
+  api-secret: ${LIVEKIT_API_SECRET:developmentsecretmustbe32characterslong}
+  public-url: ${LIVEKIT_PUBLIC_URL:ws://localhost:7880}
+  internal-url: ${LIVEKIT_INTERNAL_URL:http://sfu:7880}
+  allowed-origin: ${ALLOWED_ORIGIN:http://localhost:3000}
+
+
+spring.servlet.multipart.max-file-size: 15MB
+spring.servlet.multipart.max-request-size: 16MB
+signalroom.files: ${SIGNALROOM_FILES:/data/uploads}
