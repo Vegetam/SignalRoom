@@ -11,7 +11,7 @@ import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.junit.jupiter.api.Assertions.*;
-@SpringBootTest(properties="DATABASE_URL=jdbc:h2:mem:tests;DB_CLOSE_DELAY=-1") @AutoConfigureMockMvc class MeetingControllerTest {
+@SpringBootTest(properties={"DATABASE_URL=jdbc:h2:mem:tests;DB_CLOSE_DELAY=-1", "signalroom.files=${java.io.tmpdir}/signalroom-meeting-tests"}) @AutoConfigureMockMvc class MeetingControllerTest {
  @Autowired MockMvc mvc; @Autowired ObjectMapper mapper;
  @Test void admissionIsHostControlled() throws Exception {
   String room="room-"+UUID.randomUUID().toString().substring(0,8);

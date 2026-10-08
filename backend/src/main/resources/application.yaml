@@ -6,7 +6,7 @@ spring:
   datasource:
     url: ${DATABASE_URL:jdbc:h2:file:/data/signalroom;AUTO_SERVER=TRUE}
     username: ${SPRING_DATASOURCE_USERNAME:sa}
-    password: ${DATABASE_PASSWORD:}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DATABASE_PASSWORD:}}
 management:
   endpoints:
     web:
