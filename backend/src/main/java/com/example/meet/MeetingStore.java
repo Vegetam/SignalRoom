@@ -13,6 +13,15 @@ public class MeetingStore {
   db.execute("CREATE TABLE IF NOT EXISTS attendees(id VARCHAR(100) PRIMARY KEY, room VARCHAR(64) NOT NULL, display_name VARCHAR(60) NOT NULL, ticket VARCHAR(100) UNIQUE NOT NULL, status VARCHAR(20) NOT NULL, created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, identity VARCHAR(100))");
  }
  private String secret(){byte[] bs=new byte[32];random.nextBytes(bs);return Base64.getUrlEncoder().withoutPadding().encodeToString(bs);}
+ // The database primary key guarantees uniqueness. Retry on a rare generated-ID collision.
+ public Map<String,Object> createGenerated(String name){
+  for(int attempt=0;attempt<20;attempt++){
+   String room=String.format(Locale.ROOT,"%09d",random.nextInt(1_000_000_000));
+   try{return create(room,name);}
+   catch(Conflict | org.springframework.dao.DuplicateKeyException collision){/* Retry ID collision. */}
+  }
+  throw new Conflict("Could not allocate meeting ID; retry");
+ }
  public synchronized Map<String,Object> create(String room,String name){if(db.queryForObject("SELECT COUNT(*) FROM meetings WHERE room=?",Integer.class,room)>0)throw new Conflict("Room already exists");String key=secret();db.update("INSERT INTO meetings(room,owner_name,owner_key) VALUES(?,?,?)",room,name,key);return Map.of("room",room,"hostKey",key,"role","HOST");}
  public boolean host(String room,String key){return key!=null&&!key.isBlank()&&db.queryForObject("SELECT COUNT(*) FROM meetings WHERE room=? AND owner_key=? AND status='ACTIVE'",Integer.class,room,key)>0;}
  public void requireHost(String room,String key){if(!host(room,key))throw new Denied("Host key invalid");}
